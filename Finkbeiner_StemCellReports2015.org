@@ -92,7 +92,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 #+RESULTS:
 
 
-** Figure 1: Principle component analysis of RAW FPKM matrix
+** Principle component analysis of RAW FPKM matrix
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot.jpg :width 2150 :height 600
 
 
@@ -154,7 +154,7 @@ write.csv(data.out,file="./DATA/SOX2_CDX2.csv")
 
 #+RESULTS:
 
-** Figure 2: PCA in small intestinal, endoderm, and ES samples
+** PCA in small intestinal, endoderm, and ES samples
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot2.jpg :width 2150 :height 600
 
 smallI <- c(HIO,SIdu,SIdi,SIf,MD,ME)
@@ -190,7 +190,7 @@ multiplot(pc1.2,pc1.3,pc2.3,cols=3)
 [[file:./DATA/pcaplot2.jpg]]
 
 
-** Figure 3: PCA in small intestinal and HIO samples only
+** PCA in small intestinal and HIO samples only
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot3.jpg :width 2150 :height 600
 
 smallIo <- c(HIO,SIdu,SIdi,SIf)
@@ -226,7 +226,7 @@ multiplot(pc1.2,pc1.3,pc2.3,cols=3)
 [[file:./DATA/pcaplot3.jpg]]
 
 
-** Figure 4: Hierarchical cluster analysis of FPKM matrix in all samples 
+** Hierarchical cluster analysis of FPKM matrix in all samples 
 
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/pvclust1.jpg :height 400 :width 600
 library(pvclust)
@@ -242,7 +242,7 @@ print(plot(result,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,print
 [[file:./DATA/pvclust1.jpg]]
 
 
-** Figure 5: Hierarchical cluster analysis of small intestinal tissues, endoderm, and ES cells
+** Hierarchical cluster analysis of small intestinal tissues, endoderm, and ES cells
 
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/pvclust2.jpg :height 400 :width 600
 smallI <- c(HIO,SIdu,SIdi,SIf,MD,ME)
@@ -262,7 +262,7 @@ print(plot(result2,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,prin
 [[file:./DATA/pvclust2.jpg]]
 
 
-** Figure 6: Hierarchical cluster analysis of small intestinal tissues only
+** Hierarchical cluster analysis of small intestinal tissues only
 
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/pvclust3.jpg :height 400 :width 600
 smallIo <- c(HIO,SIdu,SIdi,SIf)
@@ -281,7 +281,7 @@ print(plot(result3,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,prin
 #+RESULTS:
 [[file:./DATA/pvclust3.jpg]]
 
-** Figure 7: Gene expression correlation matrix
+** Gene expression correlation matrix
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix1.jpg 
 
 cor1 <- cor(pca.data,method="spearman")
@@ -332,7 +332,7 @@ print(result)
 #+RESULTS:
 [[file:./DATA/corrmatrix1.jpg]]
 
-** Figure 8: Gene expression correlation matrix of small intestinal tissues, endoderm, and ES cells
+** Gene expression correlation matrix of small intestinal tissues, endoderm, and ES cells
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix2.jpg 
 
 cor2 <- cor(pca.data2,method="spearman")
@@ -383,7 +383,7 @@ print(result)
 #+RESULTS:
 [[file:./DATA/corrmatrix2.jpg]]
 
-** Figure 9: Gene expression correlation matrix of small intestinal tissues only
+** Gene expression correlation matrix of small intestinal tissues only
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix3.jpg 
 
 cor3 <- cor(pca.data3,method="spearman")
@@ -433,7 +433,7 @@ print(result)
 #+CAPTION: Matrix of Spearman's correlation coefficients for the pairwise comparison of total RNAseq profiles
 #+RESULTS:
 [[file:./DATA/corrmatrix3.jpg]]
-** Figure 10: Expression of host defense, digestive, mesenchymal, and stem cells markers
+** Expression of host defense, digestive, mesenchymal, and stem cells markers
 
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/CustomHeatmapRevised.jpg :width 500 :height 600 
 
