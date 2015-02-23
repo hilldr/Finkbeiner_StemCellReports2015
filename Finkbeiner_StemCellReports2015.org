@@ -249,7 +249,7 @@ smallI <- c(HIO,SIdu,SIdi,SIf,MD,ME)
 num.data.i <- num.data[,smallI]
 pca.data2 <- num.data.i[apply(num.data.i, 1, var, na.rm=TRUE) != 0,]
 
-result2 <- pvclust(pca.data2,method.dist="canberra",method.hclust="complete",nboot=10)
+result2 <- pvclust(pca.data2,method.dist="canberra",method.hclust="complete",nboot=10000)
 save(result2,file="./DATA/result2")
 load(file="./DATA/pvclust/DATA/result2")
 print(plot(result2,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,print.pv=TRUE,col.pv=c(2,3,8),lwd=1,cex=0.6,main="",col="grey30",ylab="Distance"))
@@ -269,7 +269,7 @@ smallIo <- c(HIO,SIdu,SIdi,SIf)
 num.data.io <- num.data[,smallIo]
 pca.data3 <- num.data.io[apply(num.data.io, 1, var, na.rm=TRUE) != 0,]
 
-result3 <- pvclust(pca.data3,method.dist="canberra",method.hclust="complete",nboot=10)
+result3 <- pvclust(pca.data3,method.dist="canberra",method.hclust="complete",nboot=10000)
 save(result3,file="./DATA/result3")
 load(file="./DATA/pvclust/DATA/result3")
 print(plot(result3,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,print.pv=TRUE,col.pv=c(2,3,8),lwd=1,cex=0.6,main="",col="grey30",ylab="Distance"))
