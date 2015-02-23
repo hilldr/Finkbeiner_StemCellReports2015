@@ -38,7 +38,7 @@ Where /x/ is an Fpkm value, \mu is the mean Fpkm among all samples in all three 
 
 
 * Figures
-#+begin_src R :session *R* :exports none
+#+begin_src R :session *R* :exports both
 # Multiple plot function
 #
 # ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
@@ -95,7 +95,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 
 ** Figure 1: Principle component analysis of RAW FPKM matrix
-#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot.jpg :width 21.5 :height 6
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot.jpg :width 2150 :height 600
 
 
 ## FMPK matrix input
@@ -146,7 +146,7 @@ multiplot(pc1.2,pc1.3,pc2.3,cols=3)
 #+NAME: pcaplot1
 #+CAPTION: Principle component analysis of total FPKM.
 #+RESULTS:
-[[file:./DATA/pcaplot.pdf]]
+[[file:./DATA/pcaplot.jpg]]
 
 #+begin_src R :session *R* :exports none 
 out <- grep("SOX2|CDX2",data$gene_id)
@@ -157,7 +157,7 @@ write.csv(data.out,file="./DATA/SOX2_CDX2.csv")
 #+RESULTS:
 
 ** Figure 2: PCA in small intestinal, endoderm, and ES samples
-#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot2.pdf :width 21.5 :height 6
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot2.jpg :width 2150 :height 600
 
 smallI <- c(HIO,SIdu,SIdi,SIf,MD,ME)
 num.data.i <- num.data[,smallI]
@@ -189,11 +189,11 @@ multiplot(pc1.2,pc1.3,pc2.3,cols=3)
 #+NAME: pcaplot2
 #+CAPTION: PCA of intestinal, ES, and endoderm samples only. 
 #+RESULTS:
-[[file:./DATA/pcaplot2.pdf]]
+[[file:./DATA/pcaplot2.jpg]]
 
 
 ** Figure 3: PCA in small intestinal and HIO samples only
-#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot3.pdf :width 21.5 :height 6
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot3.jpg :width 2150 :height 600
 
 smallIo <- c(HIO,SIdu,SIdi,SIf)
 num.data.io <- num.data[,smallIo]
@@ -225,16 +225,15 @@ multiplot(pc1.2,pc1.3,pc2.3,cols=3)
 #+NAME: pcaplot3
 #+CAPTION: PCA of intestinal and HIO samples only. 
 #+RESULTS:
-[[file:./DATA/pcaplot3.pdf]]
+[[file:./DATA/pcaplot3.jpg]]
 
 
 ** Figure 4: Hierarchical cluster analysis of FPKM matrix in all samples 
 
-#+begin_src R :session *R* :exports results :results graphics :file ./DATA/pvclust1.pdf :height 4 :width 6
-# outsourced to debian server as pvclust1.r
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pvclust1.jpg :height 400 :width 600
 library(pvclust)
-#result <- pvclust(pca.data,method.dist="canberra",method.hclust="complete",nboot=10000)
-#save(result,file="./DATA/result")
+result <- pvclust(pca.data,method.dist="canberra",method.hclust="complete",nboot=10000)
+save(result,file="./DATA/result")
 load(file="./DATA/pvclust/DATA/result")
 print(plot(result,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,print.pv=TRUE,col.pv=c(2,3,8),lwd=1,cex=0.6,main="",col="grey30",ylab="Distance"))
 #+END_SRC
@@ -242,18 +241,18 @@ print(plot(result,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,print
 #+NAME: pvclust1
 #+CAPTION: Hierarchical cluster analysis of gene counts. Red labels at branch point correspond to the Approximately Unbiased (AU) /p/-value. AU > 95 indicates that a given branch assignment is strongly supported by the data. Green labels at each branch point correspond to the bootstrap probability (BP) of a cluster, defined as the frequency of a given relationship among the bootstrap replicates.
 #+RESULTS:
-[[file:./DATA/pvclust1.pdf]]
+[[file:./DATA/pvclust1.jpg]]
 
 
 ** Figure 5: Hierarchical cluster analysis of small intestinal tissues, endoderm, and ES cells
 
-#+begin_src R :session *R* :exports results :results graphics :file ./DATA/pvclust2.pdf :height 4 :width 6
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pvclust2.jpg :height 400 :width 600
 smallI <- c(HIO,SIdu,SIdi,SIf,MD,ME)
 num.data.i <- num.data[,smallI]
 pca.data2 <- num.data.i[apply(num.data.i, 1, var, na.rm=TRUE) != 0,]
 
-#result2 <- pvclust(pca.data2,method.dist="canberra",method.hclust="complete",nboot=10)
-#save(result2,file="./DATA/result2")
+result2 <- pvclust(pca.data2,method.dist="canberra",method.hclust="complete",nboot=10)
+save(result2,file="./DATA/result2")
 load(file="./DATA/pvclust/DATA/result2")
 print(plot(result2,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,print.pv=TRUE,col.pv=c(2,3,8),lwd=1,cex=0.6,main="",col="grey30",ylab="Distance"))
 
@@ -262,18 +261,18 @@ print(plot(result2,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,prin
 #+NAME: pvclust2
 #+CAPTION: Hierarchical cluster analysis of gene counts in small intestinal tissues, endoderm, and ES cell samples only. Red labels at branch point correspond to the Approximately Unbiased (AU) /p/-value. AU > 95 indicates that a given branch assignment is strongly supported by the data. Green labels at each branch point correspond to the bootstrap probability (BP) of a cluster, defined as the frequency of a given relationship among the bootstrap replicates.
 #+RESULTS:
-[[file:./DATA/pvclust2.pdf]]
+[[file:./DATA/pvclust2.jpg]]
 
 
 ** Figure 6: Hierarchical cluster analysis of small intestinal tissues only
 
-#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pvclust3.pdf :height 4 :width 6
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pvclust3.jpg :height 400 :width 600
 smallIo <- c(HIO,SIdu,SIdi,SIf)
 num.data.io <- num.data[,smallIo]
 pca.data3 <- num.data.io[apply(num.data.io, 1, var, na.rm=TRUE) != 0,]
 
-#result3 <- pvclust(pca.data3,method.dist="canberra",method.hclust="complete",nboot=10)
-#save(result3,file="./DATA/result3")
+result3 <- pvclust(pca.data3,method.dist="canberra",method.hclust="complete",nboot=10)
+save(result3,file="./DATA/result3")
 load(file="./DATA/pvclust/DATA/result3")
 print(plot(result3,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,print.pv=TRUE,col.pv=c(2,3,8),lwd=1,cex=0.6,main="",col="grey30",ylab="Distance"))
 
@@ -282,10 +281,10 @@ print(plot(result3,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,prin
 #+NAME: pvclust3
 #+CAPTION: Hierarchical cluster analysis of expressed gene counts. Red labels at branch point correspond to the Approximately Unbiased (AU) /p/-value. AU > 95 indicates that a given branch assignment is strongly supported by the data. 
 #+RESULTS:
-[[file:./DATA/pvclust3.pdf]]
+[[file:./DATA/pvclust3.jpg]]
 
 ** Figure 7: Gene expression correlation matrix
-#+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix1.pdf 
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix1.jpg 
 
 cor1 <- cor(pca.data,method="spearman")
 
@@ -333,10 +332,10 @@ print(result)
 #+NAME: corrmatrix1
 #+CAPTION: Matrix of Spearman's correlation coefficients for the pairwise comparison of total RNAseq profiles
 #+RESULTS:
-[[file:./DATA/corrmatrix1.pdf]]
+[[file:./DATA/corrmatrix1.jpg]]
 
 ** Figure 8: Gene expression correlation matrix of small intestinal tissues, endoderm, and ES cells
-#+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix2.pdf 
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix2.jpg 
 
 cor2 <- cor(pca.data2,method="spearman")
 
@@ -384,7 +383,7 @@ print(result)
 #+NAME: corrmatrix2
 #+CAPTION: Matrix of Spearman's correlation coefficients for the pairwise comparison of total RNAseq profiles
 #+RESULTS:
-[[file:./DATA/corrmatrix2.pdf]]
+[[file:./DATA/corrmatrix2.jpg]]
 
 ** Figure 9: Gene expression correlation matrix of small intestinal tissues only
 #+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix3.jpg 
