@@ -1,0 +1,731 @@
+#    -*- mode: org -*-
+#+STARTUP: overview
+#+STARTUP: entitiespretty
+#+LATEX_HEADER:\usepackage[citestyle=authoryear-icomp,bibstyle=authoryear,maxcitenames=3,backend=biber,natbib=true]{biblatex}
+#+LATEX_HEADER:\addbibresource{methods.bib}
+
+#+TITLE: Revision of bioinformatics analysis in "Transcriptome-wide analysis reveals hallmarks of human intestine development and maturation in vitro and in vivo."
+#+OPTIONS: toc:2 H:4
+#+DATE: Updated [2015-02-23 Mon]
+#+AUTHOR: David R. Hill
+
+* Methods
+
+** RNAseq data preprocessing
+RNA sequencing data obtained from of three human intestinal organoid samples was appended to the normalized RNAseq data sets of 6 unique fetal intestinal tissue samples and 6 unique adult small intestinal tissue samples obtained from publicly available sources. The UM Bioinformatics Core downloaded the reads files from the Sequencing Core storage, and concatenated those into a single .fastq file for each sample. The UM Bioinformatics Core also downloaded reads files from EBI-AE database (Adult Samples) and NCBI-GEO (SRA) database (Fetal samples). We evaluated the quality of the raw reads data for each sample using FastQC (version 0.10.1) to identify features of the data that may indicate quality problems (e.g. low quality scores, over-represented sequences, inappropriate GC content, etc.). Initial QC report indicated over-representation of Illumina adapter sequences in samples from EBI-AE data set and NCBI-GEO data set. We trimmed off the adapter sequences from the reads using Cutadapt (version 0.9.5)\citep{Chen:2014}. We used the software package Tuxedo Suite for alignment, differential expression analysis, and post-analysis diagnostics. Briefly, we aligned reads to the reference transcriptome (UCSC hg19) using TopHat (version 2.0.9) and Bowtie (version 2.1.0.0)\citep{Langmead:2009}. We used default parameter settings for alignment, with the exception of: “--b2-very-sensitive” telling the software to spend extra time searching for valid alignments, as well as “--no-coverage-search” and “--no-novel-juncs” to limit the read mapping to known transcripts. In addition, we used FastQC for a second round of quality control (post-alignment), to ensure that only high quality data would be input to expression quantitation and differential expression analysis. Sequence retrieval, concatenation, and quality control analysis were conducted using 64-bit Red Hat Enterprise Linux version 6.3 at the UM Advanced Research Computing center.
+Sequenced RNA datasets were compiled as data frames containing normalized fragments per kilobase of exon per million fragments mapped (Fpkm) for 23,615 unique genes in each of the 15 samples by the Bioinformatics Core in the Department of Computation Medicine and Bioinformatics at the University of Michigan. We used Cufflinks/CuffNorm (version 2.2.1) for expression quantitation and differential expression analysis \citep{Trapnell:2012}, using UCSC hg19.fa as the reference genome sequence and UCSC hg19.gtf as the reference transcriptome annotation. For this analysis, we used parameter settings: “--multi-read-correct” to adjust expression calculations for reads that map in more than one locus, as well as “--compatible-hits-norm” and “--upper-quartile –norm” for normalization of expression values. Normalized FPKM tables were generated using the CuffNorm function found in Cufflinks. One-way ANOVA was applied to evaluate differences in expression among the HIO, adult intestine, and fetal intestine samples for each gene using the matrixStats package for the R (version 3.1.2) statistical programming language \citep{Bengtsson:2014} \citep{RCoreTeam:2014}. A P-value of less than 0.05 was considered statistically significant. Sequence retrieval, concatenation, and quality control analysis were conducted using 64-bit Red Hat Enterprise Linux version 6.3 at the UM Advanced Research Computing center.
+
+** Principle component analysis (PCA)
+The complete FPKM matrix, containing frequency counts for all 23,615 genes contained in the reference genome for all RNAseq samples, was evaluated using unscaled principle component analysis (PCA)  to visualize and quantify multi-dimensional variation between samples \citep{Ringner:2008}.  Of the 23,615 genes annotated in the reference genome, 1,281 (5.4%) were not detected in the RNAseq analysis of any of the samples. Principle components were calculated using the function 'prcomp' found in the R (version 3.1.2) statistical programming language \citep{RCoreTeam:2014} and plotted using the R package 'ggplot2' \citep{Hadley:2009}.
+
+** Hierarchical clustering with statistical bootsrapping
+Hierarchical cluster analysis based on the Canberra distance \citep{Lance:1966} between FPKM vectors was used to classify discrete RNAseq samples according to the degree of total transcriptional dissimilarity indicated by the normalized FPKM values. Bootstrap analysis was used to assesses the uncertainty in the assigned hierarchical clustering relationships. 10,000 bootstraping iterations were generated by repeatedly randomly sampling the FPKM dataset. The bootstrap probability (BP) of a cluster is defined as the frequency of a given relationship among the bootstrap replicates. Multiscale bootstrap resampling was used to calculate an approximately unbiased (AU) /p/-value for a given relationship, with AU > 95 indicating a high degree of statistical significance. Analyses were conducted using R package 'pvclust' \citep{Suzuki:2006}. 
+
+** Spearman correlation
+Spearman correlation was applied as an additional assessment of the cumulative degree of correlation among RNAseq datasets. We computed Spearman rank correlation coefficients (\rho{}) in a pairwise manner among all RNAseq samples using the complete normalized FPKM data. The Spearman coefficients were plotted as a heatmap using the function 'heatmap.2' in the R package 'gplots' \citep{Warnes:2014}.
+
+** Gene ontology
+Biological process gene ontology categories with putative roles in intestinal development were identified using the Gene Ontology Consortium database \citep{Ashburner:2000}. Genbank gene symbols classified within each gene ontology (GO) term were retrieved the BioMart package for Biocunductor in R \citep{Durinck:2009} \citep{Gentleman:2004}. Fpkm data corresponding to gene symbols within a GO term were retrieved from the normalized dataframe if the ANOVA P-value was < 0.05 for the comparison among the three sample groups and mean Fpkm was greater than 1 in at least one of the three sample groups. Thus, downstream gene ontology analysis included only genes which differed significantly in expression among the HIO, fetal, and adult samples and were reproducibly expressed in at least one sample group. Normalized Z-scores for each gene within a GO term that met the inclusion criteria for were calculated as follows:
+
+\begin{equation}
+z = (x - \mu)/\sigma
+\end{equation}
+
+Where /x/ is an Fpkm value, \mu is the mean Fpkm among all samples in all three groups for a given gene, and \sigma is the standard deviation among all samples in all three groups for a given gene. Heatmaps and associated dendrograms were plotted in R using the function heatmap.2 in the package gplots \citep{Warnes:2014}.
+
+\printbibliography
+
+
+
+* Figures
+#+begin_src R :session *R* :exports none
+# Multiple plot function
+#
+# ggplot objects can be passed in ..., or to plotlist (as a list of ggplot objects)
+# - cols:   Number of columns in layout
+# - layout: A matrix specifying the layout. If present, 'cols' is ignored.
+#
+# If the layout is something like matrix(c(1,2,3,3), nrow=2, byrow=TRUE),
+# then plot 1 will go in the upper left, 2 will go in the upper right, and
+# 3 will go all the way across the bottom.
+#
+## Clear temporary memory
+rm(list=ls())
+
+library(ggplot2)
+
+multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
+  require(grid)
+
+  # Make a list from the ... arguments and plotlist
+  plots <- c(list(...), plotlist)
+
+  numPlots = length(plots)
+
+  # If layout is NULL, then use 'cols' to determine layout
+  if (is.null(layout)) {
+    # Make the panel
+    # ncol: Number of columns of plots
+    # nrow: Number of rows needed, calculated from # of cols
+    layout <- matrix(seq(1, cols * ceiling(numPlots/cols)),
+                    ncol = cols, nrow = ceiling(numPlots/cols))
+  }
+
+ if (numPlots==1) {
+    print(plots[[1]])
+
+  } else {
+    # Set up the page
+    grid.newpage()
+    pushViewport(viewport(layout = grid.layout(nrow(layout), ncol(layout))))
+
+    # Make each plot, in the correct location
+    for (i in 1:numPlots) {
+      # Get the i,j matrix positions of the regions that contain this subplot
+      matchidx <- as.data.frame(which(layout == i, arr.ind = TRUE))
+
+      print(plots[[i]], vp = viewport(layout.pos.row = matchidx$row,
+                                      layout.pos.col = matchidx$col))
+    }
+  }
+}
+#+END_SRC
+
+#+RESULTS:
+
+
+** Figure 1: Principle component analysis of RAW FPKM matrix
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot.jpg :width 21.5 :height 6
+
+
+## FMPK matrix input
+data <- read.table("./DATA/HIO_v_HuSI.Duo.A_v_HuSI.Dist.A_v_HuSI.F_v_HuColon.A_v_HuStomach.F_v_HuStomach.A_v_MD_v_ME_repFpkms.txt",header=TRUE,sep="")
+
+# subset of dataframe including only the numeric columns (excludes gene id column)
+num.data <- data[,sapply(data,is.numeric)]
+rownames(num.data) <- data$gene_id
+
+pca.data <- num.data[apply(num.data, 1, var, na.rm=TRUE) != 0,]
+pca <- prcomp(t(pca.data),scale=TRUE,center=FALSE)
+
+HIO <- grep("HIO",colnames(num.data),ignore.case=T)
+SIdu <- grep("SI_Du",colnames(num.data),ignore.case=T)
+SIdi <- grep("SI_Di",colnames(num.data),ignore.case=T)
+SIf <- grep("SI_F",colnames(num.data),ignore.case=T)
+CA <- grep("lon_A",colnames(num.data),ignore.case=T)
+STA <- grep("ach_A",colnames(num.data),ignore.case=T)
+STf <- grep("ach_F",colnames(num.data),ignore.case=T)
+MD <- grep("MD",colnames(num.data),ignore.case=T)
+ME <- grep("ME",colnames(num.data),ignore.case=T)
+#shape <- c(rep(2,times=length(CDI)),rep(1,times=length(NI)))
+
+group <- c(rep("HIO",times=length(HIO)),rep("prox S.I.",times=length(SIdu)),rep("dist S.I.",times=length(SIdi)),rep("Fetal S.I.",times=length(SIf)),rep("colon",times=length(CA)),rep("Fetal stomach",times=length(STf)),rep("Stomach",times=length(STA)),rep("Def. end.",times=length(MD)),rep("ESC",times=length(ME)))
+scores <- data.frame(colnames(num.data), pca$x[,1:ncol(pca$x)],group)
+shape <- c(rep(22,times=length(HIO)),rep(21,times=30))
+
+library(ggplot2)
+theme <- theme(legend.position="right",legend.title=element_blank(),legend.background = element_rect(fill="white", size=.5, linetype="dotted"),panel.grid.minor=element_blank(), panel.grid.major=element_blank())
+
+pc1.2 <- qplot(x=PC1, y=PC2, data=scores) + theme + 
+  scale_fill_brewer(palette="Set3")+
+  geom_point(shape=21,aes(fill=factor(group)), size=8)  
+
+pc1.3 <- qplot(x=PC1, y=PC3, data=scores) + theme +
+  scale_fill_brewer(palette="Set3")+
+  geom_point(shape=21,aes(fill=factor(group)), size=8) 
+
+pc2.3 <- qplot(x=PC2, y=PC3, data=scores) + theme +
+  scale_fill_brewer(palette="Set3")+
+  geom_point(shape=21,aes(fill=factor(group)), size=8) 
+#print(pc2.3)
+
+#print(pc1.2)
+multiplot(pc1.2,pc1.3,pc2.3,cols=3)
+
+#+END_SRC
+#+NAME: pcaplot1
+#+CAPTION: Principle component analysis of total FPKM.
+#+RESULTS:
+[[file:./DATA/pcaplot.pdf]]
+
+#+begin_src R :session *R* :exports none 
+out <- grep("SOX2|CDX2",data$gene_id)
+data.out <- data[out,]
+write.csv(data.out,file="./DATA/SOX2_CDX2.csv")
+#+END_SRC
+
+#+RESULTS:
+
+** Figure 2: PCA in small intestinal, endoderm, and ES samples
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot2.pdf :width 21.5 :height 6
+
+smallI <- c(HIO,SIdu,SIdi,SIf,MD,ME)
+num.data.i <- num.data[,smallI]
+pca.data2 <- num.data.i[apply(num.data.i, 1, var, na.rm=TRUE) != 0,]
+pca2 <- prcomp(t(pca.data2),scale=TRUE,center=FALSE)
+
+groupI <- c(rep("HIO",times=length(HIO)),rep("prox S.I.",times=length(SIdu)),rep("dist S.I.",times=length(SIdi)),rep("Fetal S.I.",times=length(SIf)),rep("Def. end.",times=length(MD)),rep("ESC",times=length(ME)))
+scores2 <- data.frame(colnames(num.data.i), pca2$x[,1:ncol(pca2$x)],groupI)
+
+library(ggplot2)
+theme <- theme(legend.position="right",legend.title=element_blank(),legend.background = element_rect(fill="white", size=.5, linetype="dotted"),panel.grid.minor=element_blank(), panel.grid.major=element_blank())
+
+pc1.2 <- qplot(x=PC1, y=PC2, data=scores2) + theme + 
+  scale_fill_brewer(palette="Set2")+
+  geom_point(shape=21,aes(fill=factor(groupI)), size=8)  
+
+pc1.3 <- qplot(x=PC1, y=PC3, data=scores2) + theme +
+  scale_fill_brewer(palette="Set2")+
+  geom_point(shape=21,aes(fill=factor(groupI)), size=8) 
+
+pc2.3 <- qplot(x=PC2, y=PC3, data=scores2) + theme +
+  scale_fill_brewer(palette="Set2")+
+  geom_point(shape=21,aes(fill=factor(groupI)), size=8) 
+
+multiplot(pc1.2,pc1.3,pc2.3,cols=3)
+
+#+END_SRC
+
+#+NAME: pcaplot2
+#+CAPTION: PCA of intestinal, ES, and endoderm samples only. 
+#+RESULTS:
+[[file:./DATA/pcaplot2.pdf]]
+
+
+** Figure 3: PCA in small intestinal and HIO samples only
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pcaplot3.pdf :width 21.5 :height 6
+
+smallIo <- c(HIO,SIdu,SIdi,SIf)
+num.data.io <- num.data[,smallIo]
+pca.data3 <- num.data.io[apply(num.data.io, 1, var, na.rm=TRUE) != 0,]
+pca3 <- prcomp(t(pca.data3),scale=TRUE,center=FALSE)
+
+groupIo <- c(rep("HIO",times=length(HIO)),rep("prox S.I.",times=length(SIdu)),rep("dist S.I.",times=length(SIdi)),rep("Fetal S.I.",times=length(SIf)))
+scores3 <- data.frame(colnames(num.data.io), pca3$x[,1:ncol(pca3$x)],groupIo)
+
+library(ggplot2)
+theme <- theme(legend.position="right",legend.title=element_blank(),legend.background = element_rect(fill="white", size=.5, linetype="dotted"),panel.grid.minor=element_blank(), panel.grid.major=element_blank())
+
+pc1.2 <- qplot(x=PC1, y=PC2, data=scores3) + theme + 
+  scale_fill_brewer(palette="Set1")+
+  geom_point(shape=21,aes(fill=factor(groupIo)), size=8)  
+
+pc1.3 <- qplot(x=PC1, y=PC3, data=scores3) + theme +
+  scale_fill_brewer(palette="Set1")+
+  geom_point(shape=21,aes(fill=factor(groupIo)), size=8) 
+
+pc2.3 <- qplot(x=PC2, y=PC3, data=scores3) + theme +
+  scale_fill_brewer(palette="Set1")+
+  geom_point(shape=21,aes(fill=factor(groupIo)), size=8) 
+
+multiplot(pc1.2,pc1.3,pc2.3,cols=3)
+
+#+END_SRC
+
+#+NAME: pcaplot3
+#+CAPTION: PCA of intestinal and HIO samples only. 
+#+RESULTS:
+[[file:./DATA/pcaplot3.pdf]]
+
+
+** Figure 4: Hierarchical cluster analysis of FPKM matrix in all samples 
+
+#+begin_src R :session *R* :exports results :results graphics :file ./DATA/pvclust1.pdf :height 4 :width 6
+# outsourced to debian server as pvclust1.r
+library(pvclust)
+#result <- pvclust(pca.data,method.dist="canberra",method.hclust="complete",nboot=10000)
+#save(result,file="./DATA/result")
+load(file="./DATA/pvclust/DATA/result")
+print(plot(result,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,print.pv=TRUE,col.pv=c(2,3,8),lwd=1,cex=0.6,main="",col="grey30",ylab="Distance"))
+#+END_SRC
+
+#+NAME: pvclust1
+#+CAPTION: Hierarchical cluster analysis of gene counts. Red labels at branch point correspond to the Approximately Unbiased (AU) /p/-value. AU > 95 indicates that a given branch assignment is strongly supported by the data. Green labels at each branch point correspond to the bootstrap probability (BP) of a cluster, defined as the frequency of a given relationship among the bootstrap replicates.
+#+RESULTS:
+[[file:./DATA/pvclust1.pdf]]
+
+
+** Figure 5: Hierarchical cluster analysis of small intestinal tissues, endoderm, and ES cells
+
+#+begin_src R :session *R* :exports results :results graphics :file ./DATA/pvclust2.pdf :height 4 :width 6
+smallI <- c(HIO,SIdu,SIdi,SIf,MD,ME)
+num.data.i <- num.data[,smallI]
+pca.data2 <- num.data.i[apply(num.data.i, 1, var, na.rm=TRUE) != 0,]
+
+#result2 <- pvclust(pca.data2,method.dist="canberra",method.hclust="complete",nboot=10)
+#save(result2,file="./DATA/result2")
+load(file="./DATA/pvclust/DATA/result2")
+print(plot(result2,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,print.pv=TRUE,col.pv=c(2,3,8),lwd=1,cex=0.6,main="",col="grey30",ylab="Distance"))
+
+#+END_SRC
+
+#+NAME: pvclust2
+#+CAPTION: Hierarchical cluster analysis of gene counts in small intestinal tissues, endoderm, and ES cell samples only. Red labels at branch point correspond to the Approximately Unbiased (AU) /p/-value. AU > 95 indicates that a given branch assignment is strongly supported by the data. Green labels at each branch point correspond to the bootstrap probability (BP) of a cluster, defined as the frequency of a given relationship among the bootstrap replicates.
+#+RESULTS:
+[[file:./DATA/pvclust2.pdf]]
+
+
+** Figure 6: Hierarchical cluster analysis of small intestinal tissues only
+
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/pvclust3.pdf :height 4 :width 6
+smallIo <- c(HIO,SIdu,SIdi,SIf)
+num.data.io <- num.data[,smallIo]
+pca.data3 <- num.data.io[apply(num.data.io, 1, var, na.rm=TRUE) != 0,]
+
+#result3 <- pvclust(pca.data3,method.dist="canberra",method.hclust="complete",nboot=10)
+#save(result3,file="./DATA/result3")
+load(file="./DATA/pvclust/DATA/result3")
+print(plot(result3,hang=-1,float=0.008,cex.pv=0.3,font.pv=4,print.num=FALSE,print.pv=TRUE,col.pv=c(2,3,8),lwd=1,cex=0.6,main="",col="grey30",ylab="Distance"))
+
+#+END_SRC
+
+#+NAME: pvclust3
+#+CAPTION: Hierarchical cluster analysis of expressed gene counts. Red labels at branch point correspond to the Approximately Unbiased (AU) /p/-value. AU > 95 indicates that a given branch assignment is strongly supported by the data. 
+#+RESULTS:
+[[file:./DATA/pvclust3.pdf]]
+
+** Figure 7: Gene expression correlation matrix
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix1.pdf 
+
+cor1 <- cor(pca.data,method="spearman")
+
+## Load libraries
+library(matrixStats)
+library(gplots)
+library(RColorBrewer)
+
+# creates a color palette from blue to white to red in "n" increments
+my_palette <- colorRampPalette(c("blue","white","red"))(n = 299)
+
+# defines the color breaks manually for a "skewed" color transition
+col_breaks = c(seq(0,0.6,length=100),  #blue
+               seq(0.6,0.85,length=100),
+               seq(0.85,1,length=100))   #red    
+
+cor.mat <- as.matrix(cor1)
+
+result <- heatmap.2(cor.mat,
+                    notecol="black",     
+                    #scale="row",na.rm=T,
+                    density.info="none",
+                    key.xlab="Correlation",
+                    key.title="",   # turns off density plot inside color legend
+                    trace="none",         # turns off trace lines inside the heat map
+                    margins =c(8,8),     # widens margins around plot
+                    col=my_palette,       # use on color palette defined earlier 
+                    breaks=col_breaks,    # enable color transition at specified limits
+                    dendrogram="none",    # do not draw dendrogram
+                    Colv=T,
+                    Rowv=T,
+                    srtCol=45,
+                    cexRow= 0.7,
+                    cexCol = 0.7,
+                    keysize=0.25,
+                    labRow = rownames(cor.mat),
+                    labCol = colnames(cor.mat),
+                    #rowsep=(order(GOterm$V3)[!duplicated(sort(GOterm$V3))]-1),
+                    lwid = c(1.2,5),
+                    lhei = c(1.2,5)
+                    )          
+
+print(result)
+#+END_SRC
+#+NAME: corrmatrix1
+#+CAPTION: Matrix of Spearman's correlation coefficients for the pairwise comparison of total RNAseq profiles
+#+RESULTS:
+[[file:./DATA/corrmatrix1.pdf]]
+
+** Figure 8: Gene expression correlation matrix of small intestinal tissues, endoderm, and ES cells
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix2.pdf 
+
+cor2 <- cor(pca.data2,method="spearman")
+
+## Load libraries
+library(matrixStats)
+library(gplots)
+library(RColorBrewer)
+
+# creates a color palette from blue to white to red in "n" increments
+my_palette <- colorRampPalette(c("blue","white","red"))(n = 299)
+
+# defines the color breaks manually for a "skewed" color transition
+col_breaks = c(seq(0,0.6,length=100),  #blue
+               seq(0.6,0.85,length=100),
+               seq(0.85,1,length=100))   #red    
+
+cor.mat <- as.matrix(cor2)
+
+result <- heatmap.2(cor.mat,
+                    notecol="black",     
+                    #scale="row",na.rm=T,
+                    density.info="none",
+                    key.xlab="Correlation",
+                    key.title="",   # turns off density plot inside color legend
+                    trace="none",         # turns off trace lines inside the heat map
+                    margins =c(8,8),     # widens margins around plot
+                    col=my_palette,       # use on color palette defined earlier 
+                    breaks=col_breaks,    # enable color transition at specified limits
+                    dendrogram="none",    # do not draw dendrogram
+                    Colv=T,
+                    Rowv=T,
+                    srtCol=45,
+                    cexRow= 0.7,
+                    cexCol = 0.7,
+                    keysize=0.25,
+                    labRow = rownames(cor.mat),
+                    labCol = colnames(cor.mat),
+                    #rowsep=(order(GOterm$V3)[!duplicated(sort(GOterm$V3))]-1),
+                    lwid = c(1.2,5),
+                    lhei = c(1.2,5)
+                    )          
+
+print(result)
+#+END_SRC
+#+NAME: corrmatrix2
+#+CAPTION: Matrix of Spearman's correlation coefficients for the pairwise comparison of total RNAseq profiles
+#+RESULTS:
+[[file:./DATA/corrmatrix2.pdf]]
+
+** Figure 9: Gene expression correlation matrix of small intestinal tissues only
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/corrmatrix3.jpg 
+
+cor3 <- cor(pca.data3,method="spearman")
+
+## Load libraries
+library(matrixStats)
+library(gplots)
+library(RColorBrewer)
+
+# creates a color palette from blue to white to red in "n" increments
+my_palette <- colorRampPalette(c("blue","white","red"))(n = 299)
+
+# defines the color breaks manually for a "skewed" color transition
+col_breaks = c(seq(0,0.6,length=100),  #blue
+               seq(0.6,0.85,length=100),
+               seq(0.85,1,length=100))   #red    
+
+cor.mat <- as.matrix(cor3)
+
+result <- heatmap.2(cor.mat,
+                    notecol="black",     
+                    #scale="row",na.rm=T,
+                    density.info="none",
+                    key.xlab="Correlation",
+                    key.title="",   # turns off density plot inside color legend
+                    trace="none",         # turns off trace lines inside the heat map
+                    margins =c(8,8),     # widens margins around plot
+                    col=my_palette,       # use on color palette defined earlier 
+                    breaks=col_breaks,    # enable color transition at specified limits
+                    dendrogram="none",    # do not draw dendrogram
+                    Colv=T,
+                    Rowv=T,
+                    srtCol=45,
+                    cexRow= 0.7,
+                    cexCol = 0.7,
+                    keysize=0.25,
+                    labRow = rownames(cor.mat),
+                    labCol = colnames(cor.mat),
+                    #rowsep=(order(GOterm$V3)[!duplicated(sort(GOterm$V3))]-1),
+                    lwid = c(1.2,5),
+                    lhei = c(1.2,5)
+                    )          
+
+print(result)
+#+END_SRC
+#+NAME: corrmatrix3
+#+CAPTION: Matrix of Spearman's correlation coefficients for the pairwise comparison of total RNAseq profiles
+#+RESULTS:
+[[file:./DATA/corrmatrix3.jpg]]
+** Figure 10: Expression of host defense, digestive, mesenchymal, and stem cells markers
+
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/CustomHeatmapRevised.jpg :width 500 :height 600 
+
+## David Hill
+## September 29, 2014
+## Updated October 21, 2014
+## R script to analyze RNAseq data from Jason Spence and Stacy Finkbeiner
+## Comparison of HIO transcript profile (RNAseq) with adult and fetal human intestine
+
+## Clear temporary memory
+rm(list=ls())
+
+##input
+data <- read.table("./DATA/HIO_v_HuSI.Duo.A_v_HuSI.Dist.A_v_HuSI.F_repFpkms.csv",header=TRUE,sep=",")
+
+# -----------------------------------------------------------------------------
+# SET CRITERIA FOR INCLUSION IN DOWNSTREAM ANALYSIS
+# Fpmk cut-off 
+fco <- 0.4
+# P-value cut-off
+pco <- 1
+# -----------------------------------------------------------------------------
+
+
+## Load libraries
+library(matrixStats)
+
+## ANOVA
+# 3 groups 1) HIO 2) Adult 3) Fetal
+# reference for anova 
+# http://web.mst.edu/~psyworld/anovaexample.htm
+# F- distribution
+# http://stat.ethz.ch/R-manual/R-devel/library/stats/html/Fdist.html
+## function to compare within row, returns f distribution
+## The function is currently defined as
+row.anova <- function(mat_all,mat1,mat2,mat3){
+  mat1 <- as.matrix(mat1)
+  mat2 <- as.matrix(mat2)
+  mat3 <- as.matrix(mat3)
+  mat_all <- as.matrix(mat_all)
+  
+  s1<-rowSums(mat1,na.rm=TRUE) #
+  s2<-rowSums(mat2,na.rm=TRUE) #
+  s3<-rowSums(mat3,na.rm=TRUE) #
+  
+  s1s<-rowSums((mat1^2),na.rm=TRUE) #
+  s2s<-rowSums((mat2^2),na.rm=TRUE) #
+  s3s<-rowSums((mat3^2),na.rm=TRUE) #
+  
+  sst <- (s1s+s2s+s3s)-(((s1+s2+s3)^2)/ncol(mat_all)) #
+  
+  ssa <- (((s1^2)/ncol(mat1))+((s2^2)/ncol(mat2))+((s3^2)/ncol(mat3)))-((s1+s2+s3)^2/ncol(mat_all)) #
+  
+  ssw <- sst - ssa #
+  
+  f.stat <- (ssa/2)/(ssw/(ncol(mat_all)-3))
+  return(f.stat)
+}
+
+# calculate f-statistic
+data$fstat <- row.anova(data[,3:17],data[,3:5],data[,6:11],data[12:17])
+# express f-statistic as p-value
+data$p <- pf(data$fstat, 2, 15, lower.tail=F)
+# calculate Bonferroni correction
+data$Bonf_p <- p.adjust(data$p, method = 'bonferroni', n = length(data$p))
+
+# create three lists that will specify the treatment groups
+cn <- colnames(data)
+fetal <- grep("HuSI_F",cn,ignore.case=T)
+adult <- grep("HuSI_D", cn, ignore.case = T)
+hio <- grep("HIO", cn, ignore.case = T)
+all <- grep("HIO|HuSI",cn, ignore.case =T)
+
+#Count the number of reads with Fpmk > "fco" in each group 
+data$hio_count <- rowSums(data[,hio] >= fco, na.rm=T)
+data$adult_count <- rowSums(data[,adult] >= fco, na.rm=T)
+data$fetal_count <- rowSums(data[,fetal] >= fco, na.rm=T)
+
+# generate "present" call (present = 1, not present = 0) for each group. Greater than 1/3 of replicates must exceed FPMK cutoff
+data$hio_present <- ifelse((data$hio_count/ncol(data[,hio])) > (1/3), 1, 0)
+data$adult_present <- ifelse((data$adult_count/ncol(data[,adult])) > (1/3), 1, 0)
+data$fetal_present <- ifelse((data$fetal_count/ncol(data[,fetal])) > (1/3), 1, 0)
+
+# Group means
+data$hio_mean <- rowMeans(data[,hio], na.rm=T)
+data$adult_mean <- rowMeans(data[,adult], na.rm=T)
+data$fetal_mean <- rowMeans(data[,fetal], na.rm=T)
+
+# calculate log2 change
+data$hio_adult_log2 <- log2(data$hio_mean/data$adult_mean)
+data$hio_fetal_log2 <- log2(data$hio_mean/data$fetal_mean)
+data$fetal_adult_log2 <- log2(data$fetal_mean/data$adult_mean)
+
+#calculate z-scores
+# mean expression
+data$mean <- rowMeans(data[,all], na.rm=T)
+# calculate row sd ignoring NA
+data$sd <- apply(data[,all],1,sd, na.rm=T)
+data$HIO_0.z <- (data$HIO_0 - data$mean)/data$sd
+data$HIO_1.z <- (data$HIO_1 - data$mean)/data$sd
+data$HIO_2.z <- (data$HIO_2 - data$mean)/data$sd
+
+data$HuSI_Duo_A_0.z <- (data$HuSI_Duo_A_0 - data$mean)/data$sd
+data$HuSI_Duo_A_1.z <- (data$HuSI_Duo_A_1 - data$mean)/data$sd
+
+data$HuSI_Dist_A_0.z <- (data$HuSI_Dist_A_0 - data$mean)/data$sd
+data$HuSI_Dist_A_1.z <- (data$HuSI_Dist_A_1 - data$mean)/data$sd
+data$HuSI_Dist_A_2.z <- (data$HuSI_Dist_A_2 - data$mean)/data$sd
+data$HuSI_Dist_A_3.z <- (data$HuSI_Dist_A_3 - data$mean)/data$sd
+
+data$HuSI_F_0.z <- (data$HuSI_F_0 - data$mean)/data$sd
+data$HuSI_F_1.z <- (data$HuSI_F_1 - data$mean)/data$sd
+data$HuSI_F_2.z <- (data$HuSI_F_2 - data$mean)/data$sd
+data$HuSI_F_3.z <- (data$HuSI_F_3 - data$mean)/data$sd
+data$HuSI_F_4.z <- (data$HuSI_F_4 - data$mean)/data$sd
+data$HuSI_F_5.z <- (data$HuSI_F_5 - data$mean)/data$sd
+
+# create three lists that will specify the treatment groups (z-scores)
+cn.1 <- colnames(data)
+fetal.z <- grep("HuSI_F_0.z|HuSI_F_1.z|HuSI_F_2.z|HuSI_F_3.z|HuSI_F_4.z|HuSI_F_5.z",cn.1,ignore.case=T)
+adult.z <- grep("HuSI_Duo_A_0.z|HuSI_Duo_A_1.z|HuSI_Dist_A_0.z|HuSI_Dist_A_1.z|HuSI_Dist_A_2.z|HuSI_Dist_A_3.z", cn.1, ignore.case = T)
+hio.z <- grep("HIO_0.z|HIO_1.z|HIO_2.z", cn.1, ignore.case = T)
+all.z <- grep(".z",cn.1, ignore.case =T)
+
+#calculate z-scores
+# mean z-scores expression
+data$hio_zmean <- rowMeans(data[,hio.z], na.rm=T)
+data$adult_zmean <- rowMeans(data[,adult.z], na.rm=T)
+data$fetal_zmean <- rowMeans(data[,fetal.z], na.rm=T)
+
+
+olfm4 <- subset(data, data$gene_id == "OLFM4"|data$gene_id =="GC1"| data$gene_id =="OLM4"| data$gene_id =="OlfD"| data$gene_id =="GW112"| data$gene_id =="hGC-1"| data$gene_id =="hOLfD"| data$gene_id =="UNQ362")
+
+
+### SUBSETTING
+
+#pco <- olfm4$p
+
+# ANOVA P-value cut-off
+data.a <- subset(data, data$p <= pco)
+# FPMK reads exceeding "fco" in more than one replicate/group in at least one group
+data.a <- subset(data.a, data.a$hio_present ==1 | data.a$adult_present == 1 | data.a$fetal_present)
+
+data.b <- as.matrix(data.a[,all])
+rownames(data.b) <-  data.a$gene_id
+
+# create three lists that will specify the treatment groups
+cn <- colnames(data.b)
+fetal <- grep("HuSI_F",cn,ignore.case=T)
+adult <- grep("HuSI_D", cn, ignore.case = T)
+hio <- grep("HIO", cn, ignore.case = T)
+all <- grep("HIO|HuSI",cn, ignore.case =T)
+
+## Load libraries
+library(matrixStats)
+library(gplots)
+library(RColorBrewer)
+
+
+list <- read.csv("./DATA/Focused_Gene_List.csv",header=FALSE)
+
+#list <- as.character(list$V1)
+
+GOcad <- list[,2]
+
+genes <- which(rownames(data.b) %in% GOcad)
+
+
+GOterm <- as.data.frame(data.b[genes,])
+
+# mean expression
+GOterm$mean <- rowMeans(GOterm[,all], na.rm=T)
+# calculate row sd ignoring NA
+GOterm$sd <- apply(GOterm[,all],1,sd, na.rm=T)
+GOterm$HIO_0.z <- (GOterm$HIO_0 - GOterm$mean)/GOterm$sd
+GOterm$HIO_1.z <- (GOterm$HIO_1 - GOterm$mean)/GOterm$sd
+GOterm$HIO_2.z <- (GOterm$HIO_2 - GOterm$mean)/GOterm$sd
+
+GOterm$HuSI_Duo_A_0.z <- (GOterm$HuSI_Duo_A_0 - GOterm$mean)/GOterm$sd
+GOterm$HuSI_Duo_A_1.z <- (GOterm$HuSI_Duo_A_1 - GOterm$mean)/GOterm$sd
+
+GOterm$HuSI_Dist_A_0.z <- (GOterm$HuSI_Dist_A_0 - GOterm$mean)/GOterm$sd
+GOterm$HuSI_Dist_A_1.z <- (GOterm$HuSI_Dist_A_1 - GOterm$mean)/GOterm$sd
+GOterm$HuSI_Dist_A_2.z <- (GOterm$HuSI_Dist_A_2 - GOterm$mean)/GOterm$sd
+GOterm$HuSI_Dist_A_3.z <- (GOterm$HuSI_Dist_A_3 - GOterm$mean)/GOterm$sd
+
+GOterm$HuSI_F_0.z <- (GOterm$HuSI_F_0 - GOterm$mean)/GOterm$sd
+GOterm$HuSI_F_1.z <- (GOterm$HuSI_F_1 - GOterm$mean)/GOterm$sd
+GOterm$HuSI_F_2.z <- (GOterm$HuSI_F_2 - GOterm$mean)/GOterm$sd
+GOterm$HuSI_F_3.z <- (GOterm$HuSI_F_3 - GOterm$mean)/GOterm$sd
+GOterm$HuSI_F_4.z <- (GOterm$HuSI_F_4 - GOterm$mean)/GOterm$sd
+GOterm$HuSI_F_5.z <- (GOterm$HuSI_F_5 - GOterm$mean)/GOterm$sd
+
+
+
+# generate evenly spaced color palettes, specifying the number of increments
+cc <- colorRampPalette(c("forestgreen","dodgerblue","darkorange","firebrick3"))(n=4)
+
+
+rownames(list) <- list[,2]
+
+GOterm <- merge(GOterm, list, by="row.names",all=TRUE)
+GOterm <- GOterm[order(GOterm$V1),]
+ # replace cluster numbers with color palette
+
+GOterm$V3[GOterm$V1 == levels(GOterm$V1)[1]] <- cc[1]
+GOterm$V3[GOterm$V1 == levels(GOterm$V1)[2]] <- cc[2]
+GOterm$V3[GOterm$V1 == levels(GOterm$V1)[3]] <- cc[3]
+GOterm$V3[GOterm$V1 == levels(GOterm$V1)[4]] <- cc[4]
+
+all.z <- grep(".z",colnames(GOterm), ignore.case =T)
+GOmap.z <- as.matrix(GOterm[,all.z])
+rownames(GOmap.z) <- GOterm$V2
+
+# creates a color palette from blue to white to red in "n" increments
+my_palette <- colorRampPalette(c("blue","white","red"))(n = 299)
+
+# defines the color breaks manually for a "skewed" color transition
+col_breaks = c(seq(min(GOmap.z),-1,length=100),  #blue
+               seq(-1,1,length=100),
+               seq(1,max(GOmap.z),length=100))   #red      
+
+
+
+result <- heatmap.2(GOmap.z,
+                    notecol="black",     
+                    #scale="row",na.rm=T,
+                    density.info="none",
+                    key.xlab="Z-score",   # turns off density plot inside color legend
+                    trace="none",         # turns off trace lines inside the heat map
+                    margins =c(max(nchar(colnames(GOmap.z))),max(nchar(rownames(GOmap.z)))),     # widens margins around plot
+                    col=my_palette,       # use on color palette defined earlier 
+                    breaks=col_breaks,    # enable color transition at specified limits
+                    dendrogram="column",    # do not draw dendrogram
+                    Colv=T,
+                    Rowv=F,
+                    cexCol=1.5,
+                    srtCol=45,
+                    cexRow=1.5,
+                    keysize=0.25,
+                    rowsep=(order(GOterm$V3)[!duplicated(sort(GOterm$V3))]-1),
+                   #rowsep=c(1:nrow(GOmap.z)),
+                   #colsep=c(1:ncol(GOmap.z)),
+                   RowSideColors = GOterm$V3, #clustercolor$cluster
+                    lwid = c(1,5),
+                    lhei = c(1,5)
+                    )          
+
+
+
+#+END_SRC:
+
+#+RESULTS:
+[[file:./DATA/CustomHeatmapRevised.jpg]]
+
+#+begin_src R :session *R* :exports both :results graphics :file ./DATA/CustomHeatmapRevised_noTUBB3.jpg :width 500 :height 600 
+
+tubb3 <- grep("TUBB3",rownames(GOmap.z))
+
+GOmap.z.a <- GOmap.z[-tubb3,]
+row.colors <- GOterm$V3[-tubb3]
+
+result <- heatmap.2(GOmap.z.a,
+                    notecol="black",     
+                    #scale="row",na.rm=T,
+                    density.info="none",
+                    key.xlab="Z-score",   # turns off density plot inside color legend
+                    trace="none",         # turns off trace lines inside the heat map
+                    margins =c(max(nchar(colnames(GOmap.z.a))),max(nchar(rownames(GOmap.z.a)))),     # widens margins around plot
+                    col=my_palette,       # use on color palette defined earlier 
+                    breaks=col_breaks,    # enable color transition at specified limits
+                    dendrogram="column",    # do not draw dendrogram
+                    Colv=T,
+                    Rowv=F,
+                    cexCol=1.5,
+                    srtCol=45,
+                    cexRow=1.5,
+                    keysize=0.25,
+                    rowsep=(order(row.colors)[!duplicated(sort(row.colors))]-1),
+                   RowSideColors = row.colors, #clustercolor$cluster
+                    lwid = c(1,5),
+                    lhei = c(1,5)
+                    )          
+
+
+
+#+END_SRC
+
+#+RESULTS:
+[[file:./DATA/CustomHeatmapRevised_noTUBB3.jpg]]
+
+
