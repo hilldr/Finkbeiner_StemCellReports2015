@@ -1,6 +1,6 @@
 Datasets and R scripts related to the manuscript "Transcriptome-wide analysis reveals hallmarks of human intestine development and maturation in vitro and in vivo."
 
-Transcriptome-wide analysis reveals hallmarks of human intestine development and maturation in vitro and in vivo.
+#Transcriptome-wide analysis reveals hallmarks of human intestine development and maturation in vitro and in vivo.
 
 Stacy R. Finkbeiner1,2, David R. Hill1, Matthew Taylor3, Yu-Hwai Tsai1,  Alana Chin4, Christopher Altheim1, Carey L. Watson6 , Jennifer J. Freeman2,5, Roy Nattiv8, Matthew Thomson11, Ophir D. Klein8,9,10, Noah F. Shroyer12, Michael A. Helmrath6,7, Daniel H. Teitelbaum2,5, Peter J. Dempsey13, Jason R. Spence1,2,4,*
 
