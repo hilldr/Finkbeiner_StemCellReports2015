@@ -311,7 +311,7 @@ result <- heatmap.2(cor.mat,
                     margins =c(8,8),     # widens margins around plot
                     col=my_palette,       # use on color palette defined earlier 
                     breaks=col_breaks,    # enable color transition at specified limits
-                    dendrogram="none",    # do not draw dendrogram
+                    dendrogram="both",    # do not draw dendrogram
                     Colv=T,
                     Rowv=T,
                     srtCol=45,
@@ -362,7 +362,7 @@ result <- heatmap.2(cor.mat,
                     margins =c(8,8),     # widens margins around plot
                     col=my_palette,       # use on color palette defined earlier 
                     breaks=col_breaks,    # enable color transition at specified limits
-                    dendrogram="none",    # do not draw dendrogram
+                    dendrogram="both",    # do not draw dendrogram
                     Colv=T,
                     Rowv=T,
                     srtCol=45,
@@ -413,7 +413,7 @@ result <- heatmap.2(cor.mat,
                     margins =c(8,8),     # widens margins around plot
                     col=my_palette,       # use on color palette defined earlier 
                     breaks=col_breaks,    # enable color transition at specified limits
-                    dendrogram="none",    # do not draw dendrogram
+                    dendrogram="both",    # do not draw dendrogram
                     Colv=T,
                     Rowv=T,
                     srtCol=45,
